@@ -92,28 +92,43 @@ class ResPartner(orm.Model):
             vcard.photo.type_param = "PNG"
 
     def _fill_set_vcard(self, cr, uid, ids, vcard, update_values):
-        partner_obj = self.browse(cr, uid, ids)[0]
-        update_values = {}
+        partner_obj = self.browse(cr, uid, ids)[0] if ids else False
 
         # a vcard MUST have an N and FN attribute, so we don't have to
         #  check whether these are available here
 
         if 'email' in vcard:
             for email in vcard['email']:
-                if email.value != partner_obj.email:
+                if not partner_obj or email.value != partner_obj.email:
                     update_values['email'] = email.value
+
+        def types(tel):
+            return (map(lambda x: x.lower(), tel.type_paramlist)
+                    if 'type' in tel.params else [])
 
         # update phone numbers
         if 'tel' in vcard:
             work_tel = [tel for tel in vcard['tel']
-                            if u'work' in map(lambda x: x.lower(), tel.type_paramlist) and
-                               u'fax' not in map(lambda x: x.lower(), tel.type_paramlist)]
+                            if u'work' in types(tel) and
+                               u'fax' not in types(tel)]
+            if not work_tel and not types(tel):
+                work_tel = [tel for tel in vcard['tel']]
+
             for tel in work_tel:
-                if tel.value != partner_obj.phone:
+                if not partner_obj or tel.value != partner_obj.phone:
                     update_values['phone'] = tel.value
+                    break
+
+            fax_tel = [tel for tel in vcard['tel']
+                       if u'fax' in types(tel)]
+            for tel in fax_tel:
+                if not partner_obj or tel.value != partner_obj.fax:
+                    update_values['fax'] = tel.value
+                    break
 
             cell_tel = [tel for tel in vcard['tel']
-                            if u'cell' in map(lambda x: x.lower(), tel.type_paramlist)]
+                            if u'cell' in types(tel)]
             for tel in cell_tel:
-                if tel.value != partner_obj.mobile:
+                if not partner_obj or tel.value != partner_obj.mobile:
                     update_values['mobile'] = tel.value
+                    break

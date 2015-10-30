@@ -116,7 +116,7 @@ class vcard_model(orm.AbstractModel):
         self._fill_get_vcard(cr, uid, ids, vcard)
         return vcard
 
-    def set_vcard(self, cr, uid, ids, vcard_string):
+    def get_values_from_vcard(self, cr, uid, ids, vcard_string):
         "Import a model from a vCard"
         vcard = vobject.readOne(vcard_string)
 
@@ -134,6 +134,10 @@ class vcard_model(orm.AbstractModel):
             pickle.dumps(unmapped_properties)
 
         self._fill_set_vcard(cr, uid, ids, vcard.contents, update_values)
+        return update_values
+
+    def set_vcard(self, cr, uid, ids, vcard_string):
+        update_values = self.get_values_from_vcard(cr, uid, ids, vcard_string)
         self.write(cr, uid, ids, update_values)
 
     def get_uid_by_vcard(self, vcard_string):
