@@ -110,10 +110,15 @@ class ResPartner(orm.Model):
         # update phone numbers
         if 'tel' in vcard:
             work_tel = [tel for tel in vcard['tel']
-                            if u'work' in types(tel) and
-                               u'fax' not in types(tel)]
-            if not work_tel and not types(tel):
-                work_tel = [tel for tel in vcard['tel']]
+                        if u'work' in types(tel) and
+                        u'fax' not in types(tel)]
+            if not work_tel:
+                if types(tel):
+                    work_tel = [tel for tel in vcard['tel']
+                                if u'main' in types(tel) and
+                                u'cell' not in types(tel)]
+                else:
+                    work_tel = [tel for tel in vcard['tel']]
 
             for tel in work_tel:
                 if not partner_obj or tel.value != partner_obj.phone:
@@ -128,7 +133,7 @@ class ResPartner(orm.Model):
                     break
 
             cell_tel = [tel for tel in vcard['tel']
-                            if u'cell' in types(tel)]
+                        if u'cell' in types(tel)]
             for tel in cell_tel:
                 if not partner_obj or tel.value != partner_obj.mobile:
                     update_values['mobile'] = tel.value
