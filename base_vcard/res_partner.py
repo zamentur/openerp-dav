@@ -104,7 +104,8 @@ class ResPartner(orm.Model):
 
         def types(tel):
             return (map(lambda x: x.lower(), tel.type_paramlist)
-                    if 'type' in tel.params else [])
+                    if ('type' in tel.params or 'TYPE' in tel.params)
+                    else [])
 
         # update phone numbers
         if 'tel' in vcard:
