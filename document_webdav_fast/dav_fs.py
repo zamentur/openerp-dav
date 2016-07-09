@@ -369,7 +369,7 @@ class openerp_dav_handler(dav_interface):
             try:
                 db = sql_db.db_connect(db_name)
                 cr = db.cursor()
-                cr.execute("SELECT id FROM ir_module_module WHERE name = 'document_webdav' AND state='installed' ")
+                cr.execute("SELECT id FROM ir_module_module WHERE name = 'document_webdav_fast' AND state='installed' ")
                 res=cr.fetchone()
                 if res and len(res):
                     self.db_name_list.append(db_name)
