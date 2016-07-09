@@ -49,7 +49,7 @@ class node_context_fast(node_context):
         """ Although this fn passes back to doc.dir, it is needed since
             it is a potential caching point.
         """
-        uri = map(unicode, uri)
+        #uri = map(unicode, uri)
         (ndir, duri) = (None, None)
         for i in range(len(uri), 1, -1):
             _key = (repr(cr), repr(uri[:i]))
