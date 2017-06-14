@@ -24,7 +24,7 @@
 
 from openerp.addons.document_webdav_fast import nodes
 from openerp.addons.document_webdav_fast.dav_fs import dict_merge2
-from openerp.addons.document.document import nodefd_static
+from openerp.addons.document_webdav_fast.document import nodefd_static
 from openerp.tools.safe_eval import safe_eval
 import logging
 _logger = logging.getLogger(__name__)

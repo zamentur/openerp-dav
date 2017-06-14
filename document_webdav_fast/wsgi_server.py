@@ -5,7 +5,9 @@ import logging
 import StringIO
 import urllib
 import openerp
-
+import threading
+import websrv_lib
+from openerp.service.wsgi_server import wsgi_xmlrpc
 _logger = logging.getLogger(__name__)
 
 
@@ -47,7 +49,7 @@ def http_to_wsgi(http_dir):
         server.server_port = int(environ['SERVER_PORT'])
 
         # Initialize the underlying handler and associated auth. provider.
-        con = openerp.service.websrv_lib.noconnection(environ['wsgi.input'])
+        con = websrv_lib.noconnection(environ['wsgi.input'])
         handler = http_dir.instanciate_handler(con, environ['REMOTE_ADDR'], server)
 
         # Populate the handler as if it is called by a regular HTTP server
@@ -67,9 +69,9 @@ def http_to_wsgi(http_dir):
         if hasattr(handler, 'auth_provider'):
             try:
                 handler.auth_provider.checkRequest(handler, path)
-            except openerp.service.websrv_lib.AuthRequiredExc, ae:
+            except websrv_lib.AuthRequiredExc, ae:
                 # Darwin 9.x.x webdav clients will report "HTTP/1.0" to us, while they support (and need) the
-                # authorisation features of HTTP/1.1 
+                # authorisation features of HTTP/1.1
                 if request_version != 'HTTP/1.1' and ('Darwin/9.' not in handler.headers.get('User-Agent', '')):
                     start_response("403 Forbidden", [])
                     return []
@@ -80,7 +82,7 @@ def http_to_wsgi(http_dir):
                     ('Content-Length', 4), # len(self.auth_required_msg)
                     ])
                 return ['Blah'] # self.auth_required_msg
-            except openerp.service.websrv_lib.AuthRejectedExc,e:
+            except websrv_lib.AuthRejectedExc,e:
                 start_response("403 %s" % (e.args[0],), [])
                 return []
 
@@ -107,7 +109,7 @@ def http_to_wsgi(http_dir):
             body = response.read()
             start_response(str(response.status) + ' ' + response.reason, response_headers)
             return [body]
-        except (openerp.service.websrv_lib.AuthRejectedExc, openerp.service.websrv_lib.AuthRequiredExc):
+        except (websrv_lib.AuthRejectedExc, websrv_lib.AuthRequiredExc):
             raise
         except Exception, e:
             print e
@@ -135,7 +137,7 @@ def wsgi_webdav(environ, start_response):
     if environ['REQUEST_METHOD'] == 'OPTIONS' and pi in ['*','/']:
         return return_options(environ, start_response)
     elif pi.startswith('/webdav'):
-        http_dir = openerp.service.websrv_lib.find_http_service(pi)
+        http_dir = websrv_lib.find_http_service(pi)
         if http_dir:
             path = pi[len(http_dir.path):]
             if path.startswith('/'):
@@ -145,6 +147,31 @@ def wsgi_webdav(environ, start_response):
             return http_to_wsgi(http_dir)(environ, start_response)
     return None
 
-openerp.service.wsgi_server.module_handlers.insert(0, wsgi_webdav)
-# openerp.service.wsgi_server.register_wsgi_handler(wsgi_webdav)
+def application_unproxied(environ, start_response):
+    """ WSGI entry point."""
+    # cleanup db/uid trackers - they're set at HTTP dispatch in
+    # web.session.OpenERPSession.send() and at RPC dispatch in
+    # openerp.service.web_services.objects_proxy.dispatch().
+    # /!\ The cleanup cannot be done at the end of this `application`
+    # method because werkzeug still produces relevant logging afterwards
+    if hasattr(threading.current_thread(), 'uid'):
+        del threading.current_thread().uid
+    if hasattr(threading.current_thread(), 'dbname'):
+        del threading.current_thread().dbname
+
+    with openerp.api.Environment.manage():
+        # Try all handlers until one returns some result (i.e. not None).
+        for handler in [wsgi_webdav, wsgi_xmlrpc, openerp.http.root]:
+            result = handler(environ, start_response)
+            if result is None:
+                continue
+            return result
+
+    # We never returned from the loop.
+    response = 'No handler found.\n'
+    start_response('404 Not Found', [('Content-Type', 'text/plain'), ('Content-Length', str(len(response)))])
+    return [response]
+
+#openerp.service.wsgi_server.module_handlers.insert(0, wsgi_webdav)
+openerp.service.wsgi_server.application_unproxied = application_unproxied
 

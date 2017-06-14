@@ -9,3 +9,7 @@ vCard and CardDAV modules for OpenERP (Odoo) v7 and v8
 * document_webdav_fast: A copy of the original document_webdav module with patches for performance improvements.
 
 *IMPORTANT* The modules require the latest version of PyWebDAV 0.9.8.
+
+pip install PyWebDAV
+
+

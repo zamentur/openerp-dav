@@ -22,10 +22,10 @@
 
 import logging
 import urlparse
-from openerp.service.websrv_lib import FixSendError, HTTPHandler, HttpOptions
+from websrv_lib import FixSendError, HTTPHandler, HttpOptions
 _logger = logging.getLogger(__name__)
 class RedirectHTTPHandler(FixSendError, HttpOptions, HTTPHandler):
-    
+
     _HTTP_OPTIONS = { 'Allow': ['OPTIONS', 'GET', 'HEAD', 'PROPFIND'] }
     redirect_paths = {}
 
@@ -41,14 +41,14 @@ class RedirectHTTPHandler(FixSendError, HttpOptions, HTTPHandler):
 
         if self.path.endswith('/'):
             self.path = self.path[:-1]
-        
+
         if not self.path:
             # Return an empty page
             self.send_response(200)
             self.send_header("Content-Length", 0)
             self.end_headers()
             return None
-        
+
         redir_path = self._find_redirect()
         if redir_path is False:
             self.send_error(404, "File not found")
@@ -62,7 +62,7 @@ class RedirectHTTPHandler(FixSendError, HttpOptions, HTTPHandler):
             addr, port = self.request.getsockname()
         except Exception, e:
             self.log_error("Cannot calculate own address:" , e)
-        
+
         if self.headers.has_key('Host'):
             uparts = list(urlparse.urlparse("%s://%s:%d"% (server_proto, addr,port)))
             uparts[1] = self.headers['Host']

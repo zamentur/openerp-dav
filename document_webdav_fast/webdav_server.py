@@ -49,7 +49,7 @@ except ImportError:
     from DAV.utils import IfParser, TagList
     from DAV.errors import DAV_Error, DAV_Forbidden, DAV_NotFound
     from DAV.propfind import PROPFIND
-from openerp.service.websrv_lib import AuthProvider, AuthRequiredExc, FixSendError, HTTPHandler, HttpOptions, reg_http_service
+from websrv_lib import AuthProvider, AuthRequiredExc, FixSendError, HTTPHandler, HttpOptions, reg_http_service
 from BaseHTTPServer import BaseHTTPRequestHandler
 import urlparse
 import urllib
@@ -465,7 +465,7 @@ class DAVAuthProvider(AuthProvider):
             _logger.debug("Fail auth: %s" % e )
             return False
 
-    def checkRequest(self,handler,path, db=False):        
+    def checkRequest(self,handler,path, db=False):
         auth_str = handler.headers.get('Authorization',False)
         try:
             if not db:
@@ -479,9 +479,9 @@ class DAVAuthProvider(AuthProvider):
             else:
                 #FIXME!
                 _logger.info("Wrong path: %s, failing auth" %path)
-                raise AuthRejectedExc("Authorization failed. Wrong sub-path.") 
+                raise AuthRejectedExc("Authorization failed. Wrong sub-path.")
         if self.auth_creds.get(db):
-            return True 
+            return True
         if auth_str and auth_str.startswith('Basic '):
             auth_str=auth_str[len('Basic '):]
             (user,passwd) = base64.decodestring(auth_str).split(':')

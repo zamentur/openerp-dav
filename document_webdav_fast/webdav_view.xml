@@ -52,11 +52,11 @@
         <field name="view_mode">tree,form</field>
         <field name="search_view_id" ref="view_dir_props_filter"/>
     </record>
-   <menuitem
+      <menuitem
         name="DAV Properties"
         id="menu_properties"
         groups="base.group_no_one"
-        parent="document.menu_document_management_configuration"/>
+        parent="base.menu_administration"/>
 
       <menuitem
         name="Folders"
@@ -66,7 +66,7 @@
         parent="menu_properties"/>
 
     <!-- Add the properties to the directory form -->
-    <record model="ir.ui.view" id="view_document_directory_form1">
+    <!--<record model="ir.ui.view" id="view_document_directory_form1">
         <field name="name">document.directory.webdav.inherit</field>
         <field name="model">document.directory</field>
         <field name="inherit_id" ref="document.view_document_directory_form" />
@@ -93,7 +93,7 @@
         </page>
         </xpath>
     </field>
-    </record>
+    </record>-->
 
     <!-- File properties -->
     <record model="ir.ui.view" id="view_file_props_form">
