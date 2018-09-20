@@ -193,7 +193,7 @@ class openerp_dav_handler(dav_interface):
 
     def get_propnames(self, uri):
         props = self.PROPS
-        self.parent.log_message('get propnames: %s' % uri)
+        self.parent.log_message('get propnames: %s' % uri.replace('%','%%'))
         cr, uid, pool, dbname, uri2 = self.get_cr(uri)
         if not dbname:
             # TODO: maybe limit props for databases..?
@@ -254,7 +254,7 @@ class openerp_dav_handler(dav_interface):
 
     def prep_http_options(self, uri, opts):
         """see HttpOptions._prep_OPTIONS """
-        self.parent.log_message('get options: %s' % uri)
+        self.parent.log_message('get options: %s' % uri.replace('%','%%'))
         cr, uid, pool, dbname, uri2 = self.get_cr(uri, allow_last=True)
 
         if not dbname:
@@ -275,7 +275,7 @@ class openerp_dav_handler(dav_interface):
                         ret[key] = []
                     ret[key].extend(val)
 
-                self.parent.log_message('options: %s' % ret)
+                self.parent.log_message('options: %s' % ret.replace('%','%%'))
             else:
                 ret = opts
             return ret
@@ -369,7 +369,7 @@ class openerp_dav_handler(dav_interface):
             try:
                 db = sql_db.db_connect(db_name)
                 cr = db.cursor()
-                cr.execute("SELECT id FROM ir_module_module WHERE name = 'document_webdav' AND state='installed' ")
+                cr.execute("SELECT id FROM ir_module_module WHERE name = 'document_webdav_fast' AND state='installed' ")
                 res=cr.fetchone()
                 if res and len(res):
                     self.db_name_list.append(db_name)
@@ -390,7 +390,7 @@ class openerp_dav_handler(dav_interface):
 
     def get_childs(self,uri, filters=None):
         """ return the child objects as self.baseuris for the given URI """
-        self.parent.log_message('get children: %s' % uri)
+        self.parent.log_message('get children: %s' % uri.replace('%','%%'))
         cr, uid, pool, dbname, uri2 = self.get_cr(uri, allow_last=True)
 
         if not dbname:
@@ -406,7 +406,7 @@ class openerp_dav_handler(dav_interface):
                 fp = node.full_path()
                 if fp and len(fp):
                     fp = '/'.join(fp)
-                    self.parent.log_message('children for: %s' % fp)
+                    self.parent.log_message('children for: %s' % fp.replace('%','%%'))
                 else:
                     fp = None
                 domain = None
@@ -438,7 +438,7 @@ class openerp_dav_handler(dav_interface):
                             # Note the exceptions and that 'finally' will close the
                             # cursor
                 for d in node.children(cr, domain):
-                    self.parent.log_message('child: %s' % d.path)
+                    self.parent.log_message('child: %s' % d.path.replace('%','%%'))
                     if fp:
                         result.append( self.urijoin(dbname,fp,d.path) )
                     else:
@@ -500,7 +500,7 @@ class openerp_dav_handler(dav_interface):
         return pool.get('document.directory').get_object(cr, uid, uri, context=context)
 
     def get_data(self,uri, rrange=None):
-        self.parent.log_message('GET: %s' % uri)
+        self.parent.log_message('GET: %s' % uri.replace('%','%%'))
         cr, uid, pool, dbname, uri2 = self.get_cr(uri)
         try:
             if not dbname:
@@ -549,7 +549,7 @@ class openerp_dav_handler(dav_interface):
     @memoize(CACHE_SIZE)
     def _get_dav_resourcetype(self, uri):
         """ return type of object """
-        self.parent.log_message('get RT: %s' % uri)
+        self.parent.log_message('get RT: %s' % uri.replace('%','%%'))
         cr, uid, pool, dbname, uri2 = self.get_cr(uri)
         try:
             if not dbname:
@@ -567,7 +567,7 @@ class openerp_dav_handler(dav_interface):
             pass
 
     def _get_dav_displayname(self,uri):
-        self.parent.log_message('get DN: %s' % uri)
+        self.parent.log_message('get DN: %s' % uri.replace('%','%%'))
         cr, uid, pool, dbname, uri2 = self.get_cr(uri)
         if not dbname:
             # at root, dbname, just return the last component
@@ -583,7 +583,7 @@ class openerp_dav_handler(dav_interface):
     @memoize(CACHE_SIZE)
     def _get_dav_getcontentlength(self, uri):
         """ return the content length of an object """
-        self.parent.log_message('get length: %s' % uri)
+        self.parent.log_message('get length: %s' % uri.replace('%','%%'))
         result = 0
         cr, uid, pool, dbname, uri2 = self.get_cr(uri)
         if not dbname:
@@ -597,7 +597,7 @@ class openerp_dav_handler(dav_interface):
     @memoize(CACHE_SIZE)
     def _get_dav_getetag(self,uri):
         """ return the ETag of an object """
-        self.parent.log_message('get etag: %s' % uri)
+        self.parent.log_message('get etag: %s' % uri.replace('%','%%'))
         result = 0
         cr, uid, pool, dbname, uri2 = self.get_cr(uri)
         if not dbname:
@@ -650,7 +650,7 @@ class openerp_dav_handler(dav_interface):
 
     @memoize(CACHE_SIZE)
     def _get_dav_getcontenttype(self,uri):
-        self.parent.log_message('get contenttype: %s' % uri)
+        self.parent.log_message('get contenttype: %s' % uri.replace('%','%%'))
         cr, uid, pool, dbname, uri2 = self.get_cr(uri)
         if not dbname:
             return 'httpd/unix-directory'
@@ -668,7 +668,7 @@ class openerp_dav_handler(dav_interface):
         """ create a new collection
             see par. 9.3 of rfc4918
         """
-        self.parent.log_message('MKCOL: %s' % uri)
+        self.parent.log_message('MKCOL: %s' % uri.replace('%','%%'))
         cr, uid, pool, dbname, uri2 = self.get_cr(uri)
         if not uri2[-1]:
             raise DAV_Error(409, "Cannot create nameless collection.")
@@ -687,7 +687,7 @@ class openerp_dav_handler(dav_interface):
 
     def put(self, uri, data, content_type=None):
         """ put the object into the filesystem """
-        self.parent.log_message('Putting %s (%d), %s'%( misc.ustr(uri), data and len(data) or 0, content_type))
+        self.parent.log_message('Putting %s (%d), %s'%( misc.ustr(uri.replace('%','%%')), data and len(data) or 0, content_type))
         cr, uid, pool,dbname, uri2 = self.get_cr(uri)
         if not dbname:
             raise DAV_Forbidden
